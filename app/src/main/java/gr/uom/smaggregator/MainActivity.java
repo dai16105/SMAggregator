@@ -7,6 +7,7 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 import android.os.Bundle;
@@ -27,31 +28,28 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
-        // Authentication
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(TWITTER_CONSUMER_KEY)
-                .setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET_KEY)
-                .setOAuthAccessToken(TWITTER_ACCESS_TOKEN)
-                .setOAuthAccessTokenSecret(TWITTER_ACCESS_SECRET_TOKEN);
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        Twitter twitter = tf.getInstance();
 
+//        Twitter twitter = tf.getInstance();
+
+        Log.d(TAG, "OnCreate: Starting Web Service!");
+        GetTwitterData twitterData = new GetTwitterData();
+
+        twitterData.execute();
+        Log.d(TAG, "Finished Web Service!");
 
 
 
 
 
     }
+
+
 
 
 }
