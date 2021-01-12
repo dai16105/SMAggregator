@@ -2,7 +2,9 @@ package gr.uom.smaggregator;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import twitter4j.Query;
@@ -11,6 +13,7 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.api.SearchResource;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
@@ -21,14 +24,19 @@ import static gr.uom.smaggregator.BuildConfig.TWITTER_CONSUMER_SECRET_KEY;
 
 
 
-public class GetTwitterData extends AsyncTask<String, Void, String> {
-
-
-
+public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
     private Twitter twitter;
+    private PostArrayAdapter adapter;
+
+    public List<twitter4j.Status> Tweets;
 
     public static final String TAG = "Twitter Query Data";
-    // Get Auth credentials in an interface
+
+    public GetTwitterData (PostArrayAdapter adapter){
+        this.adapter = adapter;
+    }
+
+// -----    Get Auth credentials in an interface
     public Configuration getConfiguration() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
@@ -38,7 +46,7 @@ public class GetTwitterData extends AsyncTask<String, Void, String> {
                 .setOAuthAccessTokenSecret(TWITTER_ACCESS_SECRET_TOKEN);
         return cb.build();
     }
-    // Get the Twitter user credentials
+// -----    Get the Twitter user credentials
     public Twitter getTwitter() {
         if (twitter == null) {
             twitter = new TwitterFactory(getConfiguration()).getInstance();
@@ -47,28 +55,39 @@ public class GetTwitterData extends AsyncTask<String, Void, String> {
     }
 
 
-//    public static void getMostTrendingTweets(Twitter twitter){
-//
-//    }
-
-
-
+// -----   Get the 100 most recent tweets from the last 7 days, based on a given Query and download them on a list
     @Override
-    protected String doInBackground(String... strings) {
+    protected List<twitter4j.Status> doInBackground(String... strings) {
 
         Twitter twitter = getTwitter();
-        try{
-            Query query = new Query("#wow");
-            QueryResult result = twitter.search(query);
-            int c=0;
-            for (twitter4j.Status status : result.getTweets()) {
-                Log.d(TAG,"Status@\t" + status.getUser().getScreenName() + "\t:\t" + status.getText());
-                c+=1;
-            }
-            Log.d(TAG,"SIZE=== "+c);
-        }catch(Exception e){
-            Log.e(TAG,"Something happened....",e);
+        Query query = new Query("#capitol");
+        query.setCount(100);
+        QueryResult result = null;
+
+        try {
+            result = twitter.search(query);
+        } catch (TwitterException e) {
+            e.printStackTrace();
         }
-        return "RESULT!!!!!!!!!";
+
+        return  result.getTweets();
+    }
+
+    // -----   Parse the tweets via the adapter on the list view
+    @Override
+    protected void onPostExecute(List<twitter4j.Status> statuses) {
+        super.onPostExecute(statuses);
+
+         Tweets= statuses;
+         Log.d(TAG, "HERE ARE THE RESULTS!!!!!");
+         Log.d(TAG, "--------------------------");
+
+        for (twitter4j.Status tweet: Tweets) {
+            Log.d(TAG, "A tweet from: @\t" + tweet.getUser().getScreenName() + tweet.getText());
+
+        }
+
+        adapter.setPostList(Tweets);
     }
 }
+

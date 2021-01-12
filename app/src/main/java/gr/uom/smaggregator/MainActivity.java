@@ -10,9 +10,12 @@ import twitter4j.TwitterFactory;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,22 +29,24 @@ public class MainActivity extends AppCompatActivity {
    // TAGS
     public static final String TAG = "Rest Twitter Posts";
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ListView tweetList = findViewById(R.id.postListView);
+
+        PostArrayAdapter postArrayAdapter =
+                new PostArrayAdapter(this,
+                        R.layout.list_record,
+                        new ArrayList<Status>(),
+                        tweetList
+                );
 
 
-//        Twitter twitter = tf.getInstance();
-
-        Log.d(TAG, "OnCreate: Starting Web Service!");
-        GetTwitterData twitterData = new GetTwitterData();
-
+        GetTwitterData twitterData = new GetTwitterData(postArrayAdapter);
         twitterData.execute();
-        Log.d(TAG, "Finished Web Service!");
+
 
 
 
