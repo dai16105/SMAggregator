@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private PostArrayAdapter postArrayAdapter;
     private SearchListener searchListener;
-    private Toast progressMsg;
+
 
 
 
@@ -79,8 +81,9 @@ public class MainActivity extends AppCompatActivity {
         public boolean onQueryTextSubmit(String query) {
             Log.d(TAG, "Text submitted!");
             if (!query.isEmpty()) {
+                hideKeyboard();
                 String[] params = new String[]{query};
-                progressMsg.makeText(getApplicationContext(),"Searching...",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(),"Searching...",Toast.LENGTH_SHORT).show();
 
                 new GetTwitterData(postArrayAdapter).execute(params);
                 return true;
@@ -93,6 +96,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onQueryTextChange(String newText) {
             return false;
+        }
+
+
+    }
+
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = MainActivity.this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 
