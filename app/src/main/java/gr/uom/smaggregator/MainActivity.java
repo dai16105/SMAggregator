@@ -10,12 +10,14 @@ import twitter4j.TwitterFactory;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -42,36 +44,63 @@ public class MainActivity extends AppCompatActivity {
     // TAGS
     public static final String TAG = "Rest Twitter Posts";
 
-
-
     private static final String EMAIL = "email";
     private CallbackManager callbackManager;
     private LoginButton loginButton;
     private Context context;
+    private PostArrayAdapter postArrayAdapter;
+    private SearchListener searchListener;
+    private Toast progressMsg;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         ListView tweetList = findViewById(R.id.postListView);
 
-        PostArrayAdapter postArrayAdapter =
-                new PostArrayAdapter(this,
+        SearchView searchBar = findViewById(R.id.searchView);
+
+        searchListener = new SearchListener();
+        postArrayAdapter = new PostArrayAdapter(this,
                         R.layout.list_record,
-                        new ArrayList<Status>(),
-                        tweetList
-                );
+                        new ArrayList<>(),
+                        tweetList);
 
+        searchBar.setOnQueryTextListener(searchListener);
 
-        GetTwitterData twitterData = new GetTwitterData(postArrayAdapter);
-        twitterData.execute();
+    }
+
+    private class SearchListener implements SearchView.OnQueryTextListener {
+
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            Log.d(TAG, "Text submitted!");
+            if (!query.isEmpty()) {
+                String[] params = new String[]{query};
+                progressMsg.makeText(getApplicationContext(),"Searching...",Toast.LENGTH_SHORT).show();
+
+                new GetTwitterData(postArrayAdapter).execute(params);
+                return true;
+            } else {
+                return false;
+            }
+
+        }
+
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            return false;
+        }
+    }
 
 
         //FaceBook
+        // --------------------------------------------------------------------------
 
-        context = this.context;
+     /*   context = this.context;
 
 
         callbackManager = CallbackManager.Factory.create();
@@ -80,18 +109,15 @@ public class MainActivity extends AppCompatActivity {
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
 
 
-        loginButton = findViewById(R.id.facebook_login_button);
-        loginButton.setReadPermissions(Arrays.asList(EMAIL));
+        loginButton = findViewById(R.id.facebook_login_button3);
+        loginButton.setPermissions(Arrays.asList(EMAIL));
         // If you are using in a fragment, call loginButton.setFragment(this);
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.i("makis ",loginResult.getAccessToken().getToken());
-
-
-
+                Log.i("makis ", loginResult.getAccessToken().getToken());
             }
 
             @Override
@@ -107,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         LoginManager.getInstance().logInWithReadPermissions(this, Collections.singletonList("public_profile"));
-        Log.i("makis ",isLoggedIn + " ola ka ");
+        Log.i("makis ", isLoggedIn + " ola ka ");
 
     }
 
@@ -115,8 +141,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
-    }
+
+     // ---------------------------------------------------------------------
+
+    }*/
 
 
 
 }
+

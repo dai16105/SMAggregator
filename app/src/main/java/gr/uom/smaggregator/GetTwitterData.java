@@ -57,10 +57,10 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
 
 // -----   Get the 100 most recent tweets from the last 7 days, based on a given Query and download them on a list
     @Override
-    protected List<twitter4j.Status> doInBackground(String... strings) {
+    protected List<twitter4j.Status> doInBackground(String... params) {
 
         Twitter twitter = getTwitter();
-        Query query = new Query("#capitol");
+        Query query = new Query(params[0]);
         query.setCount(100);
         QueryResult result = null;
 
@@ -88,6 +88,7 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
         }
 
         adapter.setPostList(Tweets);
+
     }
 }
 

@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <com.facebook.login.widget.LoginButton
-        android:id="@+id/facebook_login_button"
+        android:id="@+id/facebook_login_button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -22,7 +22,18 @@
     <ListView
         android:id="@+id/postListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="205dp"
-        tools:layout_editor_absoluteY="259dp" />
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/facebook_login_button3"
+        tools:layout_editor_absoluteX="205dp" />
+
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:queryHint="#"
+        app:layout_constraintBottom_toTopOf="@+id/facebook_login_button3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
