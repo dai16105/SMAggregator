@@ -1,14 +1,20 @@
 package gr.uom.smaggregator;
 
 import android.content.Context;
+import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -23,7 +29,7 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
     private final LayoutInflater inflater;
     private final int layoutResource;
 
-    private ListView postListView;
+    private final ListView postListView;
 
 
 
@@ -55,8 +61,13 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
 
         Status currentPost = postList.get(position);
 
-        viewHolder.userId.setText(currentPost.getUser().getScreenName());
+        viewHolder.userId.setText("@" + currentPost.getUser().getScreenName());
         viewHolder.postBody.setText(currentPost.getText());
+        DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+        viewHolder.timestamp.setText(dateFormat.format(currentPost.getCreatedAt()));
+
+
+
 
         return convertView;
     }
@@ -65,10 +76,15 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
     private class ViewHolder{
         final TextView userId;
         final TextView postBody;
+        final TextView timestamp;
+        final ImageView icon;
+
 
         ViewHolder(View view){
             userId = view.findViewById(R.id.userId);
             postBody = view.findViewById(R.id.postBody);
+            timestamp = view.findViewById(R.id.date);
+            icon = view.findViewById(R.id.img);
         }
     }
 
