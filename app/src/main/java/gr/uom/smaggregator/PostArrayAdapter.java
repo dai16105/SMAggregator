@@ -26,9 +26,6 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
     private ListView postListView;
 
 
-
-
-
     public PostArrayAdapter(@NonNull Context context, int resource, @NonNull List<Status> objects, ListView listView) {
         super(context, resource, objects);
         postList = objects;

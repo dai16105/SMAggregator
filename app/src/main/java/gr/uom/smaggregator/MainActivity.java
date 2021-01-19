@@ -1,122 +1,180 @@
 package gr.uom.smaggregator;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import twitter4j.Query;
-import twitter4j.QueryResult;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.conf.Configuration;
-import twitter4j.conf.ConfigurationBuilder;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Twitter API Keys
-    private static final String TWITTER_CONSUMER_KEY= BuildConfig.TWITTER_CONSUMER_KEY;
-    private static final String TWITTER_CONSUMER_SECRET_KEY = BuildConfig.TWITTER_CONSUMER_SECRET_KEY;
-    private static final String TWITTER_ACCESS_TOKEN = BuildConfig.TWITTER_ACCESS_TOKEN;
-    private static final String TWITTER_ACCESS_SECRET_TOKEN = BuildConfig.TWITTER_ACCESS_SECRET_TOKEN;
 
-    // TAGS
-    public static final String TAG = "Rest Twitter Posts";
+    public static final String TAG = "Facebook";
+
+    CallbackManager callbackManager;
+    TextView textView1;
+    TextView textViewLogin;
+    ImageView imageViewMyPic;
+    LoginButton loginButton;
+    RecyclerView recyclerView;
+    MyAdapter myAdapter;
+    RecyclerView.LayoutManager layoutManager;
 
 
-
-    private static final String EMAIL = "email";
-    private CallbackManager callbackManager;
-    private LoginButton loginButton;
-    private Context context;
-
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
-        ListView tweetList = findViewById(R.id.postListView);
+        loginButton = findViewById(R.id.facebook_login_button);
+        textView1 = findViewById(R.id.textView);
+        textViewLogin = findViewById(R.id.textViewMyName);
+        imageViewMyPic = findViewById(R.id.imageView);
+        recyclerView = findViewById(R.id.rv_friend_list);
 
-        PostArrayAdapter postArrayAdapter =
-                new PostArrayAdapter(this,
-                        R.layout.list_record,
-                        new ArrayList<Status>(),
-                        tweetList
-                );
+        textView1.setVisibility(View.INVISIBLE);
 
-
-        GetTwitterData twitterData = new GetTwitterData(postArrayAdapter);
-        twitterData.execute();
-
-
-        //FaceBook
-
-        context = this.context;
-
+        imageViewMyPic.setVisibility(View.INVISIBLE);
 
         callbackManager = CallbackManager.Factory.create();
 
-        AccessToken accessToken = AccessToken.getCurrentAccessToken();
-        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
+        loginButton.setPermissions(Arrays.asList("user_friends, public_profile"));
 
 
-        loginButton = findViewById(R.id.facebook_login_button);
-        loginButton.setReadPermissions(Arrays.asList(EMAIL));
-        // If you are using in a fragment, call loginButton.setFragment(this);
-
-        // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.i("makis ",loginResult.getAccessToken().getToken());
+                Log.d("Demo", "We succeded");
 
-
+                textViewLogin.setVisibility(View.VISIBLE);
+                imageViewMyPic.setVisibility(View.VISIBLE);
+                textView1.setVisibility(View.VISIBLE);
 
             }
 
             @Override
             public void onCancel() {
-                // App code
+                Log.d("Demo", "We got cancelled");
             }
 
             @Override
             public void onError(FacebookException exception) {
-                Toast.makeText(context, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Demo", "error " + exception);
             }
         });
-
-
-        LoginManager.getInstance().logInWithReadPermissions(this, Collections.singletonList("public_profile"));
-        Log.i("makis ",isLoggedIn + " ola ka ");
 
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+
+
+        GraphRequest graphRequestFriends = GraphRequest.newMyFriendsRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONArrayCallback() {
+            @Override
+            public void onCompleted(JSONArray objects, GraphResponse response) {
+                Log.d("Demo", "The action completed");
+                Log.d("demo" , "asd" + objects.toString());
+                ArrayList<FBFriend> fbFriends = new ArrayList<>();
+
+                for (int i = 0; i < objects.length();i++){
+                    try {
+                        JSONObject object = objects.getJSONObject(i);
+                        fbFriends.add(new FBFriend(object.getString("id"), object.getString("name")));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+                layoutManager = new LinearLayoutManager(MainActivity.this);
+                recyclerView.setLayoutManager(layoutManager);
+                myAdapter = new MyAdapter(fbFriends);
+                recyclerView.setAdapter(myAdapter);
+
+
+            }
+        });
+
+        graphRequestFriends.executeAsync();
+
+
+        GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+            @Override
+            public void onCompleted(JSONObject object, GraphResponse response) {
+
+                try {
+                    String name = object.getString("name");
+                    String id = object.getString("id");
+                    textViewLogin.setText(name);
+                    Picasso.get().load("https://graph.facebook/" + id + "/picture?type=large").into(imageViewMyPic);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        graphRequest.executeAsync();
+
     }
 
 
 
+
+    AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
+        @Override
+        protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+            if (currentAccessToken == null) {
+                myAdapter.clear();
+
+                textViewLogin.setVisibility(View.INVISIBLE);
+                imageViewMyPic.setVisibility(View.INVISIBLE);
+                textView1.setVisibility(View.INVISIBLE);
+
+
+                LoginManager.getInstance().logOut();
+            }
+
+        }
+    };
+
+
+    @Override
+    protected void onDestroy () {
+        super.onDestroy();
+        accessTokenTracker.stopTracking();
+    }
 }
+
+
