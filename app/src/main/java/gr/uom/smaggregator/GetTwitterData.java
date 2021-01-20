@@ -23,9 +23,7 @@ import static gr.uom.smaggregator.BuildConfig.TWITTER_CONSUMER_KEY;
 import static gr.uom.smaggregator.BuildConfig.TWITTER_CONSUMER_SECRET_KEY;
 
 
-
 public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
-    private Twitter twitter;
     private PostArrayAdapter adapter;
 
     public List<twitter4j.Status> Tweets;
@@ -36,30 +34,13 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
         this.adapter = adapter;
     }
 
-// -----    Get Auth credentials in an interface
-    public Configuration getConfiguration() {
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(TWITTER_CONSUMER_KEY)
-                .setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET_KEY)
-                .setOAuthAccessToken(TWITTER_ACCESS_TOKEN)
-                .setOAuthAccessTokenSecret(TWITTER_ACCESS_SECRET_TOKEN);
-        return cb.build();
-    }
-// -----    Get the Twitter user credentials
-    public Twitter getTwitter() {
-        if (twitter == null) {
-            twitter = new TwitterFactory(getConfiguration()).getInstance();
-        }
-        return twitter;
-    }
 
 
 // -----   Get the 100 most recent tweets from the last 7 days, based on a given Query and download them on a list
     @Override
     protected List<twitter4j.Status> doInBackground(String... params) {
 
-        Twitter twitter = getTwitter();
+        Twitter twitter = getTwitterConfig.getInstance();
         Query query = new Query(params[0]);
         query.setCount(100);
         QueryResult result = null;
@@ -84,11 +65,8 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
 
         for (twitter4j.Status tweet: Tweets) {
             Log.d(TAG, "A tweet from: @\t" + tweet.getUser().getScreenName() + tweet.getText());
-
         }
-
         adapter.setPostList(Tweets);
-
     }
 }
 

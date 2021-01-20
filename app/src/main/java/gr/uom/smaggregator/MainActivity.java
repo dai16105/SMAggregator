@@ -1,6 +1,8 @@
 package gr.uom.smaggregator;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Status;
@@ -15,9 +17,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -30,19 +35,15 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
-    // Twitter API Keys
-    private static final String TWITTER_CONSUMER_KEY= BuildConfig.TWITTER_CONSUMER_KEY;
-    private static final String TWITTER_CONSUMER_SECRET_KEY = BuildConfig.TWITTER_CONSUMER_SECRET_KEY;
-    private static final String TWITTER_ACCESS_TOKEN = BuildConfig.TWITTER_ACCESS_TOKEN;
-    private static final String TWITTER_ACCESS_SECRET_TOKEN = BuildConfig.TWITTER_ACCESS_SECRET_TOKEN;
-
     // TAGS
     public static final String TAG = "Rest Twitter Posts";
 
@@ -55,13 +56,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         ListView tweetList = findViewById(R.id.postListView);
+        Button postSomething = findViewById(R.id.post_button);
 
         SearchView searchBar = findViewById(R.id.searchView);
 
@@ -73,7 +74,43 @@ public class MainActivity extends AppCompatActivity {
 
         searchBar.setOnQueryTextListener(searchListener);
 
+        postSomething.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PostActivity.class));
+            }
+        });
+
+        tweetList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG,"Clicked cell number:" + position);
+
+
+                // --------------------------> BUG! <-----------------------
+                //----------------------------------------------------------------------------
+
+                /* Click listener where you fetch the specific tweet and pass it to another activity
+                PostDetails to be rendered.
+                OutOfBoundsException, maybe because the tweetlist itself is empty and I don't know how to get
+                the array list filled with tweets.
+
+                   Intent intent = new Intent(getBaseContext(),PostDetails.class);
+
+                intent.putExtra("userId",tweet.getUser().getScreenName());
+                intent.putExtra("postBody",tweet.getText());
+
+                DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+                intent.putExtra("timestamp",dateFormat.format(tweet.getCreatedAt()));
+
+
+                ----------------------------------------------------------------------
+                ----------------------------------------------------------------------
+                */
+            }
+        });
     }
+
+
 
     private class SearchListener implements SearchView.OnQueryTextListener {
 
@@ -97,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onQueryTextChange(String newText) {
             return false;
         }
+
 
 
     }
