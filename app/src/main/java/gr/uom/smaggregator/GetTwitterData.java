@@ -2,9 +2,8 @@ package gr.uom.smaggregator;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.ListView;
+import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import twitter4j.Query;
@@ -12,15 +11,8 @@ import twitter4j.QueryResult;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.api.SearchResource;
-import twitter4j.conf.Configuration;
-import twitter4j.conf.ConfigurationBuilder;
 
-import static gr.uom.smaggregator.BuildConfig.TWITTER_ACCESS_SECRET_TOKEN;
-import static gr.uom.smaggregator.BuildConfig.TWITTER_ACCESS_TOKEN;
-import static gr.uom.smaggregator.BuildConfig.TWITTER_CONSUMER_KEY;
-import static gr.uom.smaggregator.BuildConfig.TWITTER_CONSUMER_SECRET_KEY;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 
 public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
@@ -35,12 +27,11 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
     }
 
 
-
-// -----   Get the 100 most recent tweets from the last 7 days, based on a given Query and download them on a list
+// -----   Get the 100 most recent tweets from the last 7 days, based on a given Query and download them on a list.
     @Override
     protected List<twitter4j.Status> doInBackground(String... params) {
 
-        Twitter twitter = getTwitterConfig.getInstance();
+        Twitter twitter = GetTwitterConfig.getInstance();
         Query query = new Query(params[0]);
         query.setCount(100);
         QueryResult result = null;
@@ -50,7 +41,6 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
         } catch (TwitterException e) {
             e.printStackTrace();
         }
-
         return  result.getTweets();
     }
 
@@ -59,10 +49,14 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
     protected void onPostExecute(List<twitter4j.Status> statuses) {
         super.onPostExecute(statuses);
 
-         Tweets= statuses;
+         Tweets = statuses;
          Log.d(TAG, "HERE ARE THE RESULTS!!!!!");
          Log.d(TAG, "--------------------------");
-
+        // If there are no tweets found, create a pop-up notifying the user.
+        if (Tweets == null || Tweets.isEmpty()) {
+             Log.d(TAG, "The list is empty !");
+            Toast.makeText(getApplicationContext(),"No posts were found!",Toast.LENGTH_LONG).show();
+        }
         for (twitter4j.Status tweet: Tweets) {
             Log.d(TAG, "A tweet from: @\t" + tweet.getUser().getScreenName() + tweet.getText());
         }

@@ -15,12 +15,14 @@ import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import twitter4j.Status;
+import twitter4j.StatusUpdate;
 
 public class PostArrayAdapter extends ArrayAdapter<Status> {
 
@@ -30,9 +32,6 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
     private final int layoutResource;
 
     private final ListView postListView;
-
-
-
 
 
     public PostArrayAdapter(@NonNull Context context, int resource, @NonNull List<Status> objects, ListView listView) {
@@ -49,14 +48,13 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
         counter++;
         ViewHolder viewHolder;
 
-        if(convertView == null){
+        if (convertView == null) {
             convertView = inflater.inflate(layoutResource, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
             Log.w("VIEW_HOLDER", "View Holder Created");
-        }
-        else {
-            viewHolder = (ViewHolder)convertView.getTag();
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
         Status currentPost = postList.get(position);
@@ -65,22 +63,18 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
         viewHolder.postBody.setText(currentPost.getText());
         DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
         viewHolder.timestamp.setText(dateFormat.format(currentPost.getCreatedAt()));
-
-
-
-
         return convertView;
     }
 
 
-    private class ViewHolder{
+    private class ViewHolder {
         final TextView userId;
         final TextView postBody;
         final TextView timestamp;
         final ImageView icon;
 
 
-        ViewHolder(View view){
+        ViewHolder(View view) {
             userId = view.findViewById(R.id.userId);
             postBody = view.findViewById(R.id.postBody);
             timestamp = view.findViewById(R.id.date);
@@ -92,9 +86,14 @@ public class PostArrayAdapter extends ArrayAdapter<Status> {
     public int getCount() {
         return postList.size();
     }
-
+    // Setter of the adapter
     public void setPostList(List<Status> postList) {
         this.postList = postList;
         postListView.setAdapter(this);
+    }
+    // Getter of the adapter. Get a specific item from its' position in the array.
+    public Status getItem(int position) {
+        // TODO Auto-generated method stub
+        return postList.get(position);
     }
 }

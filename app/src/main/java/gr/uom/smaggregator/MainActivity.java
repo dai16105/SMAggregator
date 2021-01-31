@@ -1,8 +1,10 @@
 package gr.uom.smaggregator;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import twitter4j.MediaEntity;
 import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Status;
@@ -18,6 +20,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -47,14 +50,7 @@ public class MainActivity extends AppCompatActivity {
     // TAGS
     public static final String TAG = "Rest Twitter Posts";
 
-    private static final String EMAIL = "email";
-    private CallbackManager callbackManager;
-    private LoginButton loginButton;
-    private Context context;
     private PostArrayAdapter postArrayAdapter;
-    private SearchListener searchListener;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         SearchView searchBar = findViewById(R.id.searchView);
 
-        searchListener = new SearchListener();
+        SearchListener searchListener = new SearchListener();
         postArrayAdapter = new PostArrayAdapter(this,
                         R.layout.list_record,
                         new ArrayList<>(),
@@ -74,44 +70,46 @@ public class MainActivity extends AppCompatActivity {
 
         searchBar.setOnQueryTextListener(searchListener);
 
+        // Post button listener. When clicked go to PostActivity.
         postSomething.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, PostActivity.class));
             }
         });
 
+        // List view item click listener. When clicked send the clicked items' data to PostDetails Activity where you view its' details.
         tweetList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG,"Clicked cell number:" + position);
+                Status item = postArrayAdapter.getItem(position);
+                String url = null;
+                for(MediaEntity me : item.getMediaEntities()){
+                    if(me.getMediaURLHttps() != null)//also check blank
+                        url = me.getMediaURLHttps();
+                }
 
-
-                // --------------------------> BUG! <-----------------------
-                //----------------------------------------------------------------------------
-
-                /* Click listener where you fetch the specific tweet and pass it to another activity
-                PostDetails to be rendered.
-                OutOfBoundsException, maybe because the tweetlist itself is empty and I don't know how to get
-                the array list filled with tweets.
-
-                   Intent intent = new Intent(getBaseContext(),PostDetails.class);
-
-                intent.putExtra("userId",tweet.getUser().getScreenName());
-                intent.putExtra("postBody",tweet.getText());
-
+                Intent intent = new Intent(getBaseContext(),PostDetails.class);
+                if (item.isRetweet()){
+                    Log.d(TAG,"THIS IS A RETWEET" + position);
+                    intent.putExtra("postBody",item.getRetweetedStatus().getText());
+                } else {
+                    intent.putExtra("postBody",item.getText());
+                }
+                intent.putExtra("userId",item.getUser().getScreenName());
+                intent.putExtra("imgUrl", url);
                 DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-                intent.putExtra("timestamp",dateFormat.format(tweet.getCreatedAt()));
+                intent.putExtra("timestamp",dateFormat.format(item.getCreatedAt()));
 
+//                MediaEntity[] image = postArrayAdapter.getItem(position).getMediaEntities();
+//                intent.put("img",postArrayAdapter.getItem(position).getMediaEntities());
+                startActivity(intent);
 
-                ----------------------------------------------------------------------
-                ----------------------------------------------------------------------
-                */
             }
         });
     }
 
-
-
+    // Search functionality for SearchBar.
     private class SearchListener implements SearchView.OnQueryTextListener {
 
         @Override
@@ -134,11 +132,9 @@ public class MainActivity extends AppCompatActivity {
         public boolean onQueryTextChange(String newText) {
             return false;
         }
-
-
-
     }
 
+    // A function to hide the keyboard.
     private void hideKeyboard() {
         // Check if no view has focus:
         View view = MainActivity.this.getCurrentFocus();
@@ -148,9 +144,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+}
 
-        //FaceBook
-        // --------------------------------------------------------------------------
+//FaceBook
+// --------------------------------------------------------------------------
 
      /*   context = this.context;
 
@@ -197,8 +194,4 @@ public class MainActivity extends AppCompatActivity {
      // ---------------------------------------------------------------------
 
     }*/
-
-
-
-}
 
