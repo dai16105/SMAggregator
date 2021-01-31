@@ -66,6 +66,9 @@ public class GetTwitterData extends AsyncTask<String, Void, List<Status>> {
         for (twitter4j.Status tweet: Tweets) {
             Log.d(TAG, "A tweet from: @\t" + tweet.getUser().getScreenName() + tweet.getText());
         }
+
+
+
         adapter.setPostList(Tweets);
     }
 }

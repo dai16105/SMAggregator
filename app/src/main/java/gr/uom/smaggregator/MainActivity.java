@@ -52,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private LoginButton loginButton;
     private Context context;
     private PostArrayAdapter postArrayAdapter;
-    private SearchListener searchListener;
-
 
 
     @Override
@@ -66,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         SearchView searchBar = findViewById(R.id.searchView);
 
-        searchListener = new SearchListener();
+        SearchListener searchListener = new SearchListener();
         postArrayAdapter = new PostArrayAdapter(this,
                         R.layout.list_record,
                         new ArrayList<>(),
@@ -123,6 +121,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),"Searching...",Toast.LENGTH_SHORT).show();
 
                 new GetTwitterData(postArrayAdapter).execute(params);
+                GetTwitterData tweets = new GetTwitterData(postArrayAdapter);
+                
                 return true;
             } else {
                 return false;
